@@ -6,47 +6,78 @@
 #include <string>
 #include <thread>
 #include <condition_variable>
+#include <assert.h>
 
 
 #include "LogBuffer.h"
 #include "Log2File.h"
 
+namespace LOG{
+
+#define MAXFILESIZE (1 << 26) //64MB
+ 
+enum OUTPUTFORM{
+    ONLYFILE = 0,
+    ONLYTERMINAL,
+    FIELAMDTERMINAL,
+    NOOUTPUT
+};
+
+enum LEVEL{
+    DEBUG = 0,
+    INFO,
+    WARNING,
+    ERROR,
+};
+
 class CLogger{
 
 public:
-    explicit CLogger();
 
-    static CLogger* getInstance();
+    static CLogger* getInstance( const std::string path, const std::string exename, const uintmax_t maxSize, const LEVEL level = DEBUG );
 
-    static bool init();
+    bool init( const std::string path, const std::string exename, const uintmax_t maxSize = MAXFILESIZE, const LEVEL level );
 
-    static void addToBuffer(const std::string msg);
+    void addToBuffer(const std::string msg);
 
-    static void flushToFile(const LOG::CLogBuffer logbuffer);
+    void flushToFile(const LOG::CLogBuffer logbuffer);
+
+    bool setLogSize(const uintmax_t size);
+
+
+private:
+    CLogger( const std::string path, const std::string exename, const uintmax_t maxSize );
+
     
 private:
-    //×°bufferµÄ¶ÓÁĞ
+    //è£…bufferçš„é˜Ÿåˆ—
     std::list<std::shared_ptr<LOG::CLogBuffer>>                  m_log_list;
-    //Ğ´Èëµ½bufferÖ¸Õë
+    //å†™å…¥bufæŒ‡é’ˆ
     std::shared_ptr<LOG::CLogBuffer>                             m_current_read_buf;
-    //½«ÈÕÖ¾Ğ´Èëµ½fileÖ¸Õë
+    //å°†æ—¥å¿—å†™å…¥åˆ°fileæŒ‡é’ˆ
     std::shared_ptr<LOG::CLogBuffer>                             m_current_write_buf;
-    //ÎÄ¼ş²Ù×÷Àà
+    //æ–‡ä»¶æ“ä½œç±»
     std::shared_ptr<LOG::CLog2File>                              m_file;
-    //logÂ·¾¶
+    //logè·¯å¾„
     std::string                                                  m_path;
-    //logÎÄ¼ş´óĞ¡
+    //logæ–‡ä»¶å¤§å°
     uintmax_t                                                    m_log_size;
-    //Ìõ¼ş±äÁ¿
+    //æ¡ä»¶å˜é‡
     std::condition_variable                                      m_cond;
-    //Ëø
+    //é”
     std::mutex                                                   m_mutex;
-    //½«ÈÕÖ¾Ë¢µ½´ÅÅÌÉÏµÄÏß³Ì£¬Ïû·ÑÕßÏß³Ì
+    //æ¶ˆè´¹è€…çº¿ç¨‹ï¼Œåˆ·åˆ°æ–‡ä»¶ä¸­
     std::shared_ptr<std::thread>                                 m_flush_thread;
-    //½«ÈÕÖ¾Ğ´µ½LogBufferÖĞµÄÏß³Ì£¬Éú²úÕßÏß³Ì
+    //ç”Ÿäº§è€…çº¿ç¨‹ï¼Œå°†æ—¥å¿—å†™åˆ°bufä¸­
     std::shared_ptr<std::thread>                                 m_write_thread;
-    //¿ªÆôÏß³Ì±êÖ¾Î»
-    bool                                                         m_flag;
+    //å¼€å¯çº¿ç¨‹æ ‡å¿—ä½
+    bool                                                         m_thread_flag;
+    //è¾“å‡ºå½¢å¼
+    OUTPUTFORM                                                   m_output_form;
+    //æ—¥å¿—ç­‰çº§
+    LEVEL                                                        m_level;
 };
+
+}
 
 #endif

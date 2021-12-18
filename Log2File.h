@@ -11,26 +11,33 @@
 
 #include "LogTimeStamp.h"
 
-//将日志刷到�?�盘�?
+//日志刷到磁盘
+
 
 namespace LOG{
+
+#define MAXFILENUM 32
 
 class CLog2File{
 
 public:
-    CLog2File(const std::string exename, const std::string path, uintmax_t size);
+    CLog2File(const std::string exename, const std::string path, uintmax_t maxSize);
 
     std::intmax_t getFileSize(const std::string filename);
 
-    void writeMsg(const std::string msg);
-
+    //刷缓存
+    void fflush(const std::string msg);
+    //返回目前文件的个数
+    uint32_t getFileNum();
 
 private:
     std::ofstream            m_file;
     std::string              m_logpath;
     uintmax_t                m_max_size;
     std::string              m_cur_filename;
-    uint32_t                 N = 0;
+    std::string              m_exename;
+    //文件个数
+    uint32_t                 N = 1;
 };
 
 

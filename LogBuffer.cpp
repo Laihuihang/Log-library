@@ -64,5 +64,9 @@ void CLogBuffer::setStatus(const Status status)
     m_status = status;
 }
 
+uint64_t CLogBuffer::getRemain()
+{
+    return m_remain;
+}
 
 } //LOG

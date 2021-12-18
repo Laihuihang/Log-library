@@ -6,6 +6,8 @@
 #include <sstream>
 
 namespace LOG{
+#define DEFAULTBUFSIZE 1 << 16
+
 
 enum Status{
         Empty = 0,
@@ -17,7 +19,7 @@ class CLogBuffer{
 
 public:
 
-    CLogBuffer(const uint64_t size);
+    CLogBuffer(const uint64_t size = DEFAULTBUFSIZE);
 
     bool empty();
 
@@ -28,6 +30,8 @@ public:
     uint64_t getSize();
     
     uint64_t getCurPos();
+
+    uint64_t getRemain();
 
     std::string getData();
 private:

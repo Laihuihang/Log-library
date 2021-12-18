@@ -2,8 +2,9 @@
 
 using namespace LOG;
 
-CLog2File::CLog2File(const std::string exename, const std::string path, uintmax_t size)
-    :m_max_size(size)
+CLog2File::CLog2File(const std::string exename, const std::string path, uintmax_t maxSize)
+    :m_max_size(maxSize)
+    ,m_exename(exename)
     ,m_logpath(path)
 {
     //检查文件夹是否存在，如不存在则创建
@@ -31,18 +32,26 @@ std::intmax_t CLog2File::getFileSize(const std::string filename)
 }
 
 //向文件中写入msg
-void CLog2File::writeMsg(const std::string msg)
+void CLog2File::fflush(const std::string msg)
 {
-
     //文件存在, 且写满了
     if( m_max_size < getFileSize( m_logpath + "/" + m_cur_filename ) ){
         if( m_file.is_open() ){
             m_file.close();
         }
-        N++;
+        ++N;
     }
     if( !m_file.is_open() ){
+        if(N >= MAXFILENUM){
+            N = 1;
+        }
+        m_cur_filename = CTimeStamp::now().toString() + "(" + std::to_string(N) + ")." + m_exename + ".log";
         m_file.open( m_logpath + "/" + m_cur_filename, std::ios::binary | std::ios::app | std::ios::in | std::ios::out );
     }
     m_file << msg;
+} 
+
+uint32_t CLog2File::getFileNum()
+{
+    return N;
 }
